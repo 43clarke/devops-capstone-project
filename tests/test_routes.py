@@ -134,9 +134,40 @@ class TestAccountService(TestCase):
         data = resp.get_json()
         self.assertEqual(data["name"], account.name)
 
-    def test_account_not_found(self):
+    def test_get_account_not_found(self):
         "It should get 404_NOT_FOUND when trying to Read a non-extant Account"
         resp = self.client.get(
             f"{BASE_URL}/0", content_type = "application/json"
         )
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_account(self):
+        """It should update a single account"""
+        account = self._create_accounts(1)[0]
+        update_data = {
+            # id can't be done here b/c how deserialize works
+            # Also we don't actually want to update it.
+            # Both are true.
+            "name": "Update Account Test",
+            "email": "testingupdate@accounts.com",
+            "address": "32 Please Pass St, Testing City, WY",
+            "phone_number": "555 555 5555",
+            "date_joined": "2025-05-05"
+        }
+        account.deserialize(update_data) # now we have an account object with updated data
+        response = self.client.put(f"{BASE_URL}/{account.id}", json = account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.get_json()
+        recieved_account = Account().deserialize(response_json)
+        # again, deserialize doesn't touch id member, so seperate update needed
+        recieved_account.id = response_json["id"]
+        self.assertEqual(recieved_account.id, account.id)
+        self.assertEqual(recieved_account.name, account.name)
+        self.assertEqual(recieved_account.email, account.email)
+        self.assertEqual(recieved_account.id, account.id)
+        self.assertEqual(recieved_account.id, account.id)
+    
+    def test_update_account_not_found(self):
+        "It should get 404_NOT_FOUND when trying to Update a non-extant Account"
+        resp = self.client.put(f"{BASE_URL}/0", json = {})
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
