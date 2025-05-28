@@ -184,7 +184,7 @@ class TestAccountService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
     
     def test_list_accounts(self):
-        """It should provide a list of all accounts"""
+        """It should Get a list of Accounts"""
         account_count = 10 # Ideally we'd grab a random int and remember it, but I'm not importing the rand tools for this...
         accounts = self._create_accounts(account_count) 
         resp = self.client.get(f"{BASE_URL}")
@@ -197,4 +197,9 @@ class TestAccountService(TestCase):
         resp = self.client.get(f"{BASE_URL}")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(len(resp.get_json()), 0)
+
+    def test_method_not_allowed(self):
+        """It should not allow an illegal method call"""
+        resp = self.client.delete(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
     
