@@ -171,3 +171,14 @@ class TestAccountService(TestCase):
         "It should get 404_NOT_FOUND when trying to Update a non-extant Account"
         resp = self.client.put(f"{BASE_URL}/0", json = {})
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_extant_account(self):
+        "It should delete an extant account"
+        account = self._create_accounts(1)[0]
+        resp = self.client.delete(f"{BASE_URL}/{account.id}")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_nonextant_account(self):
+        "It should affirm a deleted non-extant account does not exist"
+        resp = self.client.delete(f"{BASE_URL}/0")
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
