@@ -182,3 +182,19 @@ class TestAccountService(TestCase):
         "It should affirm a deleted non-extant account does not exist"
         resp = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+    
+    def test_list_accounts(self):
+        """It should provide a list of all accounts"""
+        account_count = 10 # Ideally we'd grab a random int and remember it, but I'm not importing the rand tools for this...
+        accounts = self._create_accounts(account_count) 
+        resp = self.client.get(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        resp_jsons = resp.get_json()
+        self.assertEqual(len(resp_jsons), account_count)
+
+    def test_list_no_accounts(self):
+        "It should provide an empty list when there are no accounts"
+        resp = self.client.get(f"{BASE_URL}")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.get_json()), 0)
+    
