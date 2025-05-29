@@ -142,38 +142,27 @@ class TestAccountService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_account(self):
-        """It should update a single account"""
-        account = self._create_accounts(1)[0]
-        update_data = {
-            # id can't be done here b/c how deserialize works
-            # Also we don't actually want to update it.
-            # Both are true.
-            "name": "Update Account Test",
-            "email": "testingupdate@accounts.com",
-            "address": "32 Please Pass St, Testing City, WY",
-            "phone_number": "555 555 5555",
-            "date_joined": "2025-05-05"
-        }
-        account.deserialize(update_data) # now we have an account object with updated data
-        response = self.client.put(f"{BASE_URL}/{account.id}", json = account.serialize())
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_json = response.get_json()
-        recieved_account = Account().deserialize(response_json)
-        # again, deserialize doesn't touch id member, so seperate update needed
-        recieved_account.id = response_json["id"]
-        self.assertEqual(recieved_account.id, account.id)
-        self.assertEqual(recieved_account.name, account.name)
-        self.assertEqual(recieved_account.email, account.email)
-        self.assertEqual(recieved_account.id, account.id)
-        self.assertEqual(recieved_account.id, account.id)
+        """It should Update an existing Account"""
+        # create an Account to update
+        test_account = AccountFactory()
+        resp = self.client.post(BASE_URL, json=test_account.serialize())
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+        # update the account
+        new_account = resp.get_json()
+        new_account["name"] = "Something Known"
+        resp = self.client.put(f"{BASE_URL}/{new_account['id']}", json=new_account)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        updated_account = resp.get_json()
+        self.assertEqual(updated_account["name"], "Something Known")
     
     def test_update_account_not_found(self):
         "It should get 404_NOT_FOUND when trying to Update a non-extant Account"
         resp = self.client.put(f"{BASE_URL}/0", json = {})
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_delete_extant_account(self):
-        "It should delete an extant account"
+    def test_delete_account(self):
+        """It should Delete an Account"""
         account = self._create_accounts(1)[0]
         resp = self.client.delete(f"{BASE_URL}/{account.id}")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
@@ -183,14 +172,13 @@ class TestAccountService(TestCase):
         resp = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
     
-    def test_list_accounts(self):
+    def test_get_account_list(self):
         """It should Get a list of Accounts"""
-        account_count = 10 # Ideally we'd grab a random int and remember it, but I'm not importing the rand tools for this...
-        accounts = self._create_accounts(account_count) 
-        resp = self.client.get(f"{BASE_URL}")
+        self._create_accounts(5)
+        resp = self.client.get(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        resp_jsons = resp.get_json()
-        self.assertEqual(len(resp_jsons), account_count)
+        data = resp.get_json()
+        self.assertEqual(len(data), 5)
 
     def test_list_no_accounts(self):
         "It should provide an empty list when there are no accounts"
