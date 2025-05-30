@@ -140,7 +140,7 @@ class TestAccountService(TestCase):
     def test_get_account_not_found(self):
         "It should get 404_NOT_FOUND when trying to Read a non-extant Account"
         resp = self.client.get(
-            f"{BASE_URL}/0", content_type = "application/json"
+            f"{BASE_URL}/0", content_type="application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -158,10 +158,10 @@ class TestAccountService(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         updated_account = resp.get_json()
         self.assertEqual(updated_account["name"], "Something Known")
-    
+
     def test_update_account_not_found(self):
         "It should get 404_NOT_FOUND when trying to Update a non-extant Account"
-        resp = self.client.put(f"{BASE_URL}/0", json = {})
+        resp = self.client.put(f"{BASE_URL}/0", json={})
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_delete_account(self):
@@ -174,7 +174,7 @@ class TestAccountService(TestCase):
         "It should affirm a deleted non-extant account does not exist"
         resp = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-    
+
     def test_get_account_list(self):
         """It should Get a list of Accounts"""
         self._create_accounts(5)
@@ -193,7 +193,7 @@ class TestAccountService(TestCase):
         """It should not allow an illegal method call"""
         resp = self.client.delete(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    
+
     def test_security_headers(self):
         """It should return security headers"""
         response = self.client.get('/', environ_overrides=HTTPS_ENVIRON)
